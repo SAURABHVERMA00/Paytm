@@ -1,5 +1,5 @@
 const { User } = require("../models/user");
-const { createHmac,randomBytes } = require("crypto");
+const { createHmac, randomBytes } = require("node:crypto");
 
 async function userSignUp(req, res) {
   const { username, password, firstName, lastName, phoneNumber, email } =
