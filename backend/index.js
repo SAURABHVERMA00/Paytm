@@ -17,8 +17,9 @@ catch((err)=>{
 })
 
 //  import middleware
-var cookieParser = require('cookie-parser');
+const cookieParser = require('cookie-parser');
 const userRoute=require('./routes/user')
+const amountRoute=require('./routes/amount')
 const {checkForAuthenticationUser}=require('./middleware/auth')
 
 
@@ -26,7 +27,18 @@ const {checkForAuthenticationUser}=require('./middleware/auth')
 
 
 // middleware
-app.use(cors())
+app.use(cors({
+    origin: 'http://localhost:5173', // Allow requests from this origin
+    credentials: true, // Allow credentials (cookies) to be sent
+}));
+  
+const corsOptions = {
+    origin: ['http://localhost:5173'],
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+    credentials: true, // Necessary for including cookies and auth headers
+};
+app.use(cors(corsOptions)); // Use CORS for all routes
 
 app.use(express.json())
 app.use(express.json())
@@ -35,10 +47,14 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
 
-app.use(checkForAuthenticationUser("token"))
+// app.use(checkForAuthenticationUser("token"))
 
 
 app.use('/api/v1/paytm/user',userRoute)
+
+app.use('/api/v1/paytm/account',amountRoute)
+
+
 
 app.listen(port,()=>{
     console.log(`Server is running on port ${port}`)

@@ -1,12 +1,23 @@
-const { User } = require("../models/user");
+const { User  } = require("../models/user");
+const  Account  = require("../models/bank");
 const { createHmac, randomBytes } = require("node:crypto");
+const {createTokenForUser} =require('../service/auth');
+
+const {checkForAuthenticationUser} = require("../middleware/auth");
 
 async function userSignUp(req, res) {
   const { username, password, firstName, lastName, phoneNumber, email } =
     req.body;
+  if(!username || !password || !firstName || !lastName || !phoneNumber || !email){
+    return res.status(411).json({
+      message:"Fill all fields" 
+    })
+  }
   const user = await User.findOne({ email });
   if (user) {
-    return res.send("User already exists");
+    return res.status(411).json({
+      message: "User already exists",
+    });
   }
   const newUser = new User({
     username,
@@ -17,10 +28,24 @@ async function userSignUp(req, res) {
     email,
   });
 
-  await newUser.save();
-  res.status(201).json({ message: "User created successfully" });
 
-  // return res.redirect("/")
+  await newUser.save();
+
+  
+  const userId = newUser._id; 
+
+  await Account.create({
+    userId: userId,
+    balance:1+Math.floor(Math.random()*10000)
+
+  })
+
+    return res.json({message:"User created successfully"});
+
+  
+  
+
+
 }
 
 async function userSignIn(req, res) {
@@ -29,16 +54,25 @@ async function userSignIn(req, res) {
   try {
     const token = await User.usermatchPasswordtokenGenerator(email, password);
   
-    return res.cookie("token", token).send("User logged in successfully");
+    return res.json({message:"User logged in successfully" ,token});
+
   } catch(error) {
-    console.log(error); 
+    // console.log(error); 
     res.status(401).send({ error: "Invalid email or password" });
   }
 }
 
+
+
 function userLogout(req, res) {
+  console.log(req.cookies.token);
   res.clearCookie("token").send("User logged out successfully");
 }
+
+
+
+
+
 async function userChangePassword(req,res){
   const {username,password,firstName,lastName, phoneNumber,email}=req.body;
   const {success}=signSchema.safeParse(req.body);
@@ -65,7 +99,7 @@ async function userChangePassword(req,res){
 
   try{
       // console.log(token);
-      payload=checkForAuthenticationUser(token);
+      payload=checkForAuthenticationUser('token');
       // console.log(payload);
 
   }catch(error){
@@ -142,9 +176,12 @@ async function userFindByName(req,res) {
 }
 
 
+
 module.exports = {
   userSignUp,
   userSignIn,
   userLogout,
   userChangePassword,
+  userFindByName,
+
 };

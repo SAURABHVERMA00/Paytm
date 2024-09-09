@@ -6,7 +6,7 @@ const router=Router();
 
 
 
-const {userSignUp,userSignIn,userLogout,userChangePassword}=require('../controller/user');
+const {userSignUp,userSignIn,userLogout,userChangePassword , userFindByName}=require('../controller/user');
 
 
 //Routes
@@ -20,5 +20,6 @@ router.put("/updatePassword",userChangePassword);
 
 
 
+router.get("/findUser",userFindByName);
 
 module.exports=router;
